@@ -1,0 +1,12 @@
+{
+  "name": "stress-test",
+  "version": "1.0.0",
+  "description": "Stress testing for flash-sale-system",
+  "private": true,
+  "scripts": {
+    "test": "echo 'Stress tests coming in Phase 6'"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "flash-sale-system",
+  "version": "1.0.0",
+  "description": "High-throughput flash sale platform",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client",
+    "stress-test"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "npm run dev -w server & npm run dev -w client",
+    "build": "npm run build -w server && npm run build -w client",
+    "test": "npm run test -w server"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
