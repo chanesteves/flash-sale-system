@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   GoneException,
+  ServiceUnavailableException,
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,18 +43,29 @@ export class PurchaseService {
    * On success, enqueues an async job to persist the order to PostgreSQL.
    */
   async attemptPurchase(userId: string): Promise<PurchaseResult> {
-    // Atomic check: dedup + stock decrement in Redis
-    const result = await this.inventoryService.tryReserve(userId);
+    let reserveResult: number;
 
-    if (result === -1) {
+    // Step 1: Atomic check — dedup + stock decrement in Redis
+    try {
+      reserveResult = await this.inventoryService.tryReserve(userId);
+    } catch (error) {
+      this.logger.error(
+        `Redis unavailable during purchase for user ${userId}: ${error instanceof Error ? error.message : error}`,
+      );
+      throw new ServiceUnavailableException(
+        'Service temporarily unavailable. Please try again shortly.',
+      );
+    }
+
+    if (reserveResult === -1) {
       throw new ConflictException('You have already purchased this item.');
     }
 
-    if (result === 0) {
+    if (reserveResult === 0) {
       throw new GoneException('Sorry, the item is sold out.');
     }
 
-    // Generate order ID and enqueue for async DB persistence
+    // Step 2: Generate order ID and enqueue for async DB persistence
     const orderId = uuidv4();
 
     try {
@@ -61,7 +73,7 @@ export class PurchaseService {
         'persist-order',
         { orderId, userId },
         {
-          attempts: 3,
+          attempts: 5,
           backoff: { type: 'exponential', delay: 1000 },
           removeOnComplete: 100,
           removeOnFail: 50,
@@ -80,11 +92,12 @@ export class PurchaseService {
     } catch (error) {
       // If enqueue fails, rollback the Redis reservation
       this.logger.error(
-        `Failed to enqueue order for user ${userId}, rolling back`,
-        error,
+        `Failed to enqueue order for user ${userId}, rolling back: ${error instanceof Error ? error.message : error}`,
       );
       await this.inventoryService.releaseOne(userId);
-      throw error;
+      throw new ServiceUnavailableException(
+        'Service temporarily unavailable. Please try again shortly.',
+      );
     }
   }
 

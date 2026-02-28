@@ -39,6 +39,13 @@ import { AppService } from './app.service.js';
         entities: [Order],
         synchronize: true, // Auto-create tables in dev (disable in prod)
         logging: configService.get<string>('NODE_ENV') !== 'production',
+        // Connection pool tuning for high throughput
+        extra: {
+          max: 20,           // Max connections in pool
+          min: 5,            // Min connections kept alive
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+        },
       }),
       inject: [ConfigService],
     }),

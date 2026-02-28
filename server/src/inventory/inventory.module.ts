@@ -17,6 +17,9 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
           port: config.port,
           password: config.password,
           maxRetriesPerRequest: null, // Required by BullMQ
+          enableReadyCheck: true,
+          lazyConnect: false,
+          connectTimeout: 5000,
           retryStrategy: (times: number) => {
             if (times > 10) return null;
             return Math.min(times * 200, 5000);
