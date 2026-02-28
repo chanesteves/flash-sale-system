@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from './config/config.module.js';
 import { SaleModule } from './sale/sale.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { PurchaseModule } from './purchase/purchase.module.js';
+import { HealthModule } from './health/health.module.js';
 import { Order } from './purchase/entities/order.entity.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -14,6 +16,20 @@ import { AppService } from './app.service.js';
   imports: [
     // Configuration (loads .env, makes config globally available)
     ConfigModule,
+
+    // Rate limiting (per-IP throttling)
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,   // 1 second window
+        limit: 10,   // 10 requests per second per IP
+      },
+      {
+        name: 'medium',
+        ttl: 10000,  // 10 second window
+        limit: 50,   // 50 requests per 10 seconds per IP
+      },
+    ]),
 
     // Database (PostgreSQL via TypeORM)
     TypeOrmModule.forRootAsync({
@@ -44,6 +60,7 @@ import { AppService } from './app.service.js';
     InventoryModule,
     SaleModule,
     PurchaseModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
