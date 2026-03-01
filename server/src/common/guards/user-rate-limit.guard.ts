@@ -8,7 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from '../../inventory/inventory.module.js';
+import { REDIS_CLIENT } from '../../inventory/constants.js';
 
 const USER_ATTEMPT_KEY_PREFIX = 'flash_sale:attempts:';
 const MAX_PURCHASE_ATTEMPTS = 3;

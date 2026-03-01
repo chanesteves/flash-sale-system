@@ -1,7 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from './inventory.module.js';
+import { REDIS_CLIENT } from './constants.js';
 import { saleConfig } from '../config/sale.config.js';
 
 const STOCK_KEY = 'flash_sale:stock_count';

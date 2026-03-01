@@ -1,12 +1,13 @@
 {
   "name": "stress-test",
   "version": "1.0.0",
-  "description": "Stress testing for flash-sale-system",
+  "description": "k6 stress tests for the Flash Sale System",
   "private": true,
   "scripts": {
-    "test": "echo 'Stress tests coming in Phase 6'"
+    "test:stress": "k6 run scripts/concurrent-purchase.js",
+    "test:sustained": "k6 run scripts/sustained-throughput.js",
+    "test:dedup": "k6 run scripts/duplicate-storm.js",
+    "test:all": "npm run test:stress && npm run test:sustained && npm run test:dedup"
   },
-  "devDependencies": {
-    "typescript": "^5.3.3"
-  }
+  "devDependencies": {}
 }

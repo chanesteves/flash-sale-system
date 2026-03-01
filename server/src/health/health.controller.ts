@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
-import { REDIS_CLIENT } from '../inventory/inventory.module.js';
+import { REDIS_CLIENT } from '../inventory/constants.js';
 
 interface HealthStatus {
   status: 'ok' | 'degraded' | 'down';

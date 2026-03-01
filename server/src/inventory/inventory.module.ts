@@ -1,10 +1,10 @@
-import { Module, Global, OnModuleInit } from '@nestjs/common';
+import { Module, Global, OnModuleInit, Inject } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
 import { redisConfig } from '../config/redis.config.js';
 import { InventoryService } from './inventory.service.js';
-
-export const REDIS_CLIENT = 'REDIS_CLIENT';
+import { REDIS_CLIENT } from './constants.js';
+export { REDIS_CLIENT } from './constants.js';
 
 @Global()
 @Module({
@@ -33,7 +33,8 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
   exports: [REDIS_CLIENT, InventoryService],
 })
 export class InventoryModule implements OnModuleInit {
-  constructor(private readonly inventoryService: InventoryService) {}
+  @Inject(InventoryService)
+  private readonly inventoryService!: InventoryService;
 
   async onModuleInit() {
     // Initialize stock count in Redis if not already set
