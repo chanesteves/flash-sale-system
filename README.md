@@ -147,18 +147,18 @@ flash-sale-system/
 
 ## Tech Stack
 
-| Layer            | Technology                       | Purpose                                        |
-| ---------------- | -------------------------------- | ---------------------------------------------- |
-| Backend          | NestJS 11 + TypeScript           | API server, dependency injection, guards        |
-| Frontend         | React 19 + Vite 7                | Single-page application                         |
-| Cache / Atomics  | Redis 7 + Lua scripts            | Atomic stock counter, purchase dedup, rate limits |
-| Database         | PostgreSQL 16 + TypeORM          | Persistent order storage, connection pooling     |
-| Message Queue    | BullMQ (Redis-backed)            | Async order persistence under burst load         |
-| Rate Limiting    | @nestjs/throttler + custom guard | Two-tier IP limiting + per-user attempt limits   |
-| Validation       | class-validator                  | DTO validation with whitelist enforcement        |
-| Testing          | Jest 30 + supertest              | 29 unit tests + 14 e2e integration tests         |
-| Stress Testing   | k6                               | Burst load, sustained throughput, dedup storms   |
-| Infrastructure   | Docker Compose                   | Local Redis + PostgreSQL containers              |
+| Layer           | Technology                       | Purpose                                           |
+| --------------- | -------------------------------- | ------------------------------------------------- |
+| Backend         | NestJS 11 + TypeScript           | API server, dependency injection, guards          |
+| Frontend        | React 19 + Vite 7                | Single-page application                           |
+| Cache / Atomics | Redis 7 + Lua scripts            | Atomic stock counter, purchase dedup, rate limits |
+| Database        | PostgreSQL 16 + TypeORM          | Persistent order storage, connection pooling      |
+| Message Queue   | BullMQ (Redis-backed)            | Async order persistence under burst load          |
+| Rate Limiting   | @nestjs/throttler + custom guard | Two-tier IP limiting + per-user attempt limits    |
+| Validation      | class-validator                  | DTO validation with whitelist enforcement         |
+| Testing         | Jest 30 + supertest              | 29 unit tests + 14 e2e integration tests          |
+| Stress Testing  | k6                               | Burst load, sustained throughput, dedup storms    |
+| Infrastructure  | Docker Compose                   | Local Redis + PostgreSQL containers               |
 
 ---
 
@@ -193,27 +193,27 @@ Open http://localhost:5173 to access the flash sale UI.
 
 ### Environment Variables
 
-| Variable           | Default                                                                     | Description               |
-| ------------------ | --------------------------------------------------------------------------- | ------------------------- |
-| `SALE_START_TIME`  | `2026-03-01T10:00:00Z`                                                      | Sale window start (ISO)   |
-| `SALE_END_TIME`    | `2026-03-01T11:00:00Z`                                                      | Sale window end (ISO)     |
-| `STOCK_QUANTITY`   | `100`                                                                       | Total items available     |
-| `DATABASE_URL`     | `postgresql://flash_sale_user:flash_sale_password@localhost:5432/flash_sale_db` | PostgreSQL connection   |
-| `REDIS_HOST`       | `localhost`                                                                  | Redis host               |
-| `REDIS_PORT`       | `6379`                                                                       | Redis port               |
-| `PORT`             | `3000`                                                                       | API server port          |
+| Variable          | Default                                                                         | Description             |
+| ----------------- | ------------------------------------------------------------------------------- | ----------------------- |
+| `SALE_START_TIME` | `2026-03-01T10:00:00Z`                                                          | Sale window start (ISO) |
+| `SALE_END_TIME`   | `2026-03-01T11:00:00Z`                                                          | Sale window end (ISO)   |
+| `STOCK_QUANTITY`  | `100`                                                                           | Total items available   |
+| `DATABASE_URL`    | `postgresql://flash_sale_user:flash_sale_password@localhost:5432/flash_sale_db` | PostgreSQL connection   |
+| `REDIS_HOST`      | `localhost`                                                                     | Redis host              |
+| `REDIS_PORT`      | `6379`                                                                          | Redis port              |
+| `PORT`            | `3000`                                                                          | API server port         |
 
 ---
 
 ## API Endpoints
 
-| Method | Path                       | Description                     | Auth/Guards                              |
-| ------ | -------------------------- | ------------------------------- | ---------------------------------------- |
-| GET    | `/api/sale/status`         | Sale status + remaining stock   | Throttler                                |
-| POST   | `/api/purchases`           | Attempt a purchase              | Throttler + SaleActive + UserRateLimit   |
-| GET    | `/api/purchases/:userId`   | Check if user has purchased     | Throttler                                |
-| GET    | `/api/health`              | Redis + DB health check         | None                                     |
-| GET    | `/`                        | Server info                     | None                                     |
+| Method | Path                     | Description                   | Auth/Guards                            |
+| ------ | ------------------------ | ----------------------------- | -------------------------------------- |
+| GET    | `/api/sale/status`       | Sale status + remaining stock | Throttler                              |
+| POST   | `/api/purchases`         | Attempt a purchase            | Throttler + SaleActive + UserRateLimit |
+| GET    | `/api/purchases/:userId` | Check if user has purchased   | Throttler                              |
+| GET    | `/api/health`            | Redis + DB health check       | None                                   |
+| GET    | `/`                      | Server info                   | None                                   |
 
 ### Example: Purchase
 
@@ -261,6 +261,7 @@ npm run test:e2e
 ```
 
 Covers:
+
 - **Sale status** — field validation, ISO dates, stock bounds
 - **Purchase flow** — successful purchase, duplicate rejection, sold-out handling, validation errors
 - **Concurrency** — 10 concurrent users with 5 stock → exactly 5 succeed; 10 same-user requests → exactly 1 succeeds
@@ -283,11 +284,11 @@ npm run test:sustained
 npm run test:dedup
 ```
 
-| Test           | Key Assertions                                                                         |
-| -------------- | -------------------------------------------------------------------------------------- |
-| Concurrent     | Exactly `STOCK_QUANTITY` succeed (201); rest get 409/410; zero 5xx                     |
-| Sustained      | 500 req/s for 60s; p95 < 500ms; p99 < 1s; error rate < 1%                             |
-| Duplicate storm| Exactly 1 success; 99 conflicts (409); no stock leakage                                |
+| Test            | Key Assertions                                                     |
+| --------------- | ------------------------------------------------------------------ |
+| Concurrent      | Exactly `STOCK_QUANTITY` succeed (201); rest get 409/410; zero 5xx |
+| Sustained       | 500 req/s for 60s; p95 < 500ms; p99 < 1s; error rate < 1%          |
+| Duplicate storm | Exactly 1 success; 99 conflicts (409); no stock leakage            |
 
 ---
 
@@ -375,10 +376,10 @@ return 1                               -- success
 
 ### Docker Compose Services
 
-| Service    | Image              | Port | Purpose                          |
-| ---------- | ------------------ | ---- | -------------------------------- |
-| Redis      | `redis:7-alpine`   | 6379 | Stock state, dedup, rate limits  |
-| PostgreSQL | `postgres:16-alpine` | 5432 | Order persistence                |
+| Service    | Image                | Port | Purpose                         |
+| ---------- | -------------------- | ---- | ------------------------------- |
+| Redis      | `redis:7-alpine`     | 6379 | Stock state, dedup, rate limits |
+| PostgreSQL | `postgres:16-alpine` | 5432 | Order persistence               |
 
 Both services have health checks configured and use named volumes for data persistence.
 
@@ -392,6 +393,315 @@ docker compose ps
 # Stop and remove volumes
 docker compose down -v
 ```
+
+---
+
+## Manual Testing Scenarios
+
+Below are step-by-step scenarios you can run with `curl` to manually verify every behaviour of the system. Make sure Docker services are running (`docker compose up -d`) and the server is started (`cd server && npm run dev`).
+
+### Setup: Configure an Active Sale
+
+Edit `.env` so the sale is currently active with a small stock:
+
+```env
+SALE_START_TIME=2020-01-01T00:00:00Z
+SALE_END_TIME=2099-01-01T00:00:00Z
+STOCK_QUANTITY=5
+```
+
+Restart the server after changing `.env`.
+
+---
+
+### Scenario 1 — Health Check
+
+Verify Redis and PostgreSQL are reachable.
+
+```bash
+curl -s http://localhost:3000/api/health | jq
+```
+
+**Expected:** Status `"ok"`, both services `"up"` with latency in ms.
+
+---
+
+### Scenario 2 — Sale Status (Active)
+
+```bash
+curl -s http://localhost:3000/api/sale/status | jq
+```
+
+**Expected:**
+
+```json
+{
+  "status": "active",
+  "startsAt": "2020-01-01T00:00:00.000Z",
+  "endsAt": "2099-01-01T00:00:00.000Z",
+  "stockRemaining": 5,
+  "totalStock": 5
+}
+```
+
+---
+
+### Scenario 3 — Successful Purchase
+
+```bash
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "alice"}' | jq
+```
+
+**Expected (201):**
+
+```json
+{
+  "success": true,
+  "message": "Purchase confirmed!",
+  "orderId": "<uuid>"
+}
+```
+
+Verify stock decremented:
+
+```bash
+curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
+# Expected: 4
+```
+
+---
+
+### Scenario 4 — Duplicate Purchase Rejection
+
+Try buying again with the same user:
+
+```bash
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "alice"}' | jq
+```
+
+**Expected (409):**
+
+```json
+{
+  "statusCode": 409,
+  "message": "You have already purchased this item.",
+  "error": "Conflict"
+}
+```
+
+---
+
+### Scenario 5 — Purchase Status Check
+
+```bash
+# User who purchased
+curl -s http://localhost:3000/api/purchases/alice | jq
+# Expected: { "purchased": true, "userId": "alice" }
+
+# User who didn't purchase
+curl -s http://localhost:3000/api/purchases/unknown-user | jq
+# Expected: { "purchased": false, "userId": "unknown-user" }
+```
+
+---
+
+### Scenario 6 — Sell Out All Stock
+
+Buy the remaining 4 items (stock was 5, alice bought 1):
+
+```bash
+for user in bob carol dave eve; do
+  echo "--- $user ---"
+  curl -s -X POST http://localhost:3000/api/purchases \
+    -H "Content-Type: application/json" \
+    -d "{\"userId\": \"$user\"}" | jq '.success'
+done
+```
+
+**Expected:** All four return `true`. Stock is now 0.
+
+---
+
+### Scenario 7 — Sold-Out Rejection
+
+```bash
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "frank"}' | jq
+```
+
+**Expected (410):**
+
+```json
+{
+  "statusCode": 410,
+  "message": "Sorry, the item is sold out.",
+  "error": "Gone"
+}
+```
+
+Verify stock is zero:
+
+```bash
+curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
+# Expected: 0
+```
+
+---
+
+### Scenario 8 — Validation Errors
+
+```bash
+# Missing userId
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{}' | jq
+# Expected (400): "userId should not be empty" or similar
+
+# Empty userId
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": ""}' | jq
+# Expected (400): validation error
+
+# Extra fields stripped (whitelist: true)
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "test-user", "hack": true}' | jq
+# Expected (400): "property hack should not exist"
+```
+
+---
+
+### Scenario 9 — Sale Not Active (Upcoming)
+
+Change `.env` so the sale hasn't started yet, then restart:
+
+```env
+SALE_START_TIME=2099-01-01T00:00:00Z
+SALE_END_TIME=2099-12-31T00:00:00Z
+```
+
+```bash
+# Check status
+curl -s http://localhost:3000/api/sale/status | jq '.status'
+# Expected: "upcoming"
+
+# Try to purchase
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "eager-user"}' | jq
+# Expected (400): sale not active
+```
+
+---
+
+### Scenario 10 — Sale Not Active (Ended)
+
+Change `.env` so the sale is in the past, then restart:
+
+```env
+SALE_START_TIME=2020-01-01T00:00:00Z
+SALE_END_TIME=2020-01-02T00:00:00Z
+```
+
+```bash
+curl -s http://localhost:3000/api/sale/status | jq '.status'
+# Expected: "ended"
+
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "late-user"}' | jq
+# Expected (400): sale not active
+```
+
+---
+
+### Scenario 11 — Per-User Rate Limiting (3 attempts max)
+
+Set the sale to active again and restart. Then spam from one user:
+
+```bash
+# Attempt 1 — succeeds (purchase)
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "spammer"}' | jq '.success'
+# Expected: true
+
+# Attempt 2 — 409 (already purchased, but counts as attempt)
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "spammer"}'
+# Expected: 409
+
+# Attempt 3 — 409 (still counts)
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "spammer"}'
+# Expected: 409
+
+# Attempt 4+ — 429 (rate limited, blocked before reaching service)
+curl -s -X POST http://localhost:3000/api/purchases \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "spammer"}' | jq
+# Expected (429): "Too many purchase attempts. Maximum 3 attempts allowed."
+```
+
+---
+
+### Scenario 12 — Concurrent Purchases (Shell)
+
+Test atomicity with 10 parallel requests against 3 stock:
+
+```bash
+# Set STOCK_QUANTITY=3 in .env and restart server
+
+for i in $(seq 1 10); do
+  curl -s -o /dev/null -w "user-$i: %{http_code}\n" \
+    -X POST http://localhost:3000/api/purchases \
+    -H "Content-Type: application/json" \
+    -d "{\"userId\": \"user-$i\"}" &
+done
+wait
+```
+
+**Expected:** Exactly 3 responses with `201`, exactly 7 with `410`. No overselling.
+
+Verify:
+
+```bash
+curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
+# Expected: 0
+```
+
+---
+
+### Scenario 13 — Order Persistence in PostgreSQL
+
+After a successful purchase, verify the order was persisted asynchronously:
+
+```bash
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
+  -c "SELECT id, \"userId\", status, \"createdAt\" FROM orders ORDER BY \"createdAt\" DESC LIMIT 5;"
+```
+
+**Expected:** Rows with `status = 'confirmed'` matching the userIds that successfully purchased.
+
+---
+
+### Scenario 14 — Frontend Walkthrough
+
+1. Open http://localhost:5173
+2. **Upcoming sale** — Timer counts down, "Buy Now" button is disabled
+3. **Active sale** — Stock count visible, enter a userId, click "Buy Now"
+4. **Success** — Green confirmation with order ID
+5. **Duplicate** — Try same userId again → error message
+6. **Sold out** — After all stock is gone → sold-out message
+7. **Ended sale** — After `SALE_END_TIME` passes → "Sale Ended" display
 
 ---
 
