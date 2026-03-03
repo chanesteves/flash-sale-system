@@ -189,6 +189,27 @@ cd server && npm run dev
 cd client && npm run dev
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# 1. Clone and install
+git clone <repo-url>; cd flash-sale-system
+Copy-Item .env.example .env
+npm install
+
+# 2. Start infrastructure
+docker compose up -d
+
+# 3. Start backend (dev mode, port 3000)
+cd server; npm run dev
+
+# 4. Start frontend (dev mode, port 5173) — in a new terminal
+cd client; npm run dev
+```
+
+</details>
+
 Open http://localhost:5173 to access the flash sale UI.
 
 ### Environment Variables
@@ -237,6 +258,16 @@ curl -X POST http://localhost:3000/api/purchases \
   "error": "Conflict"
 }
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# Attempt purchase
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"user-42\"}" | jq
+```
+
+</details>
 
 ---
 
@@ -400,6 +431,13 @@ docker compose down -v
 
 Below are step-by-step scenarios you can run with `curl` to manually verify every behaviour of the system. Make sure Docker services are running (`docker compose up -d`) and the server is started (`cd server && npm run dev`).
 
+> **🪟 Windows (PowerShell) users:**
+>
+> - Use **`curl.exe`** instead of `curl` (PowerShell aliases `curl` to `Invoke-WebRequest`).
+> - Commands are single-line — PowerShell does not support `\` for line continuation.
+> - JSON data uses escaped double quotes: `-d "{\"userId\": \"alice\"}"` instead of `-d '{"userId": "alice"}'`.
+> - Each scenario below includes a **Windows (PowerShell)** dropdown with equivalent commands.
+
 ### Setup: Configure an Active Sale
 
 Edit `.env` so the sale is currently active with a small stock:
@@ -422,6 +460,15 @@ Verify Redis and PostgreSQL are reachable.
 curl -s http://localhost:3000/api/health | jq
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/health | jq
+```
+
+</details>
+
 **Expected:** Status `"ok"`, both services `"up"` with latency in ms.
 
 ---
@@ -431,6 +478,15 @@ curl -s http://localhost:3000/api/health | jq
 ```bash
 curl -s http://localhost:3000/api/sale/status | jq
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/sale/status | jq
+```
+
+</details>
 
 **Expected:**
 
@@ -454,6 +510,15 @@ curl -s -X POST http://localhost:3000/api/purchases \
   -d '{"userId": "alice"}' | jq
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"alice\"}" | jq
+```
+
+</details>
+
 **Expected (201):**
 
 ```json
@@ -471,6 +536,16 @@ curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
 # Expected: 4
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/sale/status | jq ".stockRemaining"
+# Expected: 4
+```
+
+</details>
+
 ---
 
 ### Scenario 4 — Duplicate Purchase Rejection
@@ -482,6 +557,15 @@ curl -s -X POST http://localhost:3000/api/purchases \
   -H "Content-Type: application/json" \
   -d '{"userId": "alice"}' | jq
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"alice\"}" | jq
+```
+
+</details>
 
 **Expected (409):**
 
@@ -507,6 +591,21 @@ curl -s http://localhost:3000/api/purchases/unknown-user | jq
 # Expected: { "purchased": false, "userId": "unknown-user" }
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# User who purchased
+curl.exe -s http://localhost:3000/api/purchases/alice | jq
+# Expected: { "purchased": true, "userId": "alice" }
+
+# User who didn't purchase
+curl.exe -s http://localhost:3000/api/purchases/unknown-user | jq
+# Expected: { "purchased": false, "userId": "unknown-user" }
+```
+
+</details>
+
 ---
 
 ### Scenario 6 — Sell Out All Stock
@@ -522,6 +621,18 @@ for user in bob carol dave eve; do
 done
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+foreach ($user in @("bob","carol","dave","eve")) {
+  Write-Host "--- $user ---"
+  curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"$user\"}" | jq ".success"
+}
+```
+
+</details>
+
 **Expected:** All four return `true`. Stock is now 0.
 
 ---
@@ -533,6 +644,15 @@ curl -s -X POST http://localhost:3000/api/purchases \
   -H "Content-Type: application/json" \
   -d '{"userId": "frank"}' | jq
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"frank\"}" | jq
+```
+
+</details>
 
 **Expected (410):**
 
@@ -550,6 +670,16 @@ Verify stock is zero:
 curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
 # Expected: 0
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/sale/status | jq ".stockRemaining"
+# Expected: 0
+```
+
+</details>
 
 ---
 
@@ -575,6 +705,25 @@ curl -s -X POST http://localhost:3000/api/purchases \
 # Expected (400): "property hack should not exist"
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# Missing userId
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{}" | jq
+# Expected (400): "userId should not be empty" or similar
+
+# Empty userId
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"\"}" | jq
+# Expected (400): validation error
+
+# Extra fields stripped (whitelist: true)
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"test-user\", \"hack\": true}" | jq
+# Expected (400): "property hack should not exist"
+```
+
+</details>
+
 ---
 
 ### Scenario 9 — Sale Not Active (Upcoming)
@@ -598,6 +747,21 @@ curl -s -X POST http://localhost:3000/api/purchases \
 # Expected (400): sale not active
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# Check status
+curl.exe -s http://localhost:3000/api/sale/status | jq ".status"
+# Expected: "upcoming"
+
+# Try to purchase
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"eager-user\"}" | jq
+# Expected (400): sale not active
+```
+
+</details>
+
 ---
 
 ### Scenario 10 — Sale Not Active (Ended)
@@ -618,6 +782,19 @@ curl -s -X POST http://localhost:3000/api/purchases \
   -d '{"userId": "late-user"}' | jq
 # Expected (400): sale not active
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/sale/status | jq ".status"
+# Expected: "ended"
+
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"late-user\"}" | jq
+# Expected (400): sale not active
+```
+
+</details>
 
 ---
 
@@ -651,6 +828,29 @@ curl -s -X POST http://localhost:3000/api/purchases \
 # Expected (429): "Too many purchase attempts. Maximum 3 attempts allowed."
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# Attempt 1 — succeeds (purchase)
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}" | jq ".success"
+# Expected: true
+
+# Attempt 2 — 409 (already purchased, but counts as attempt)
+curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}"
+# Expected: 409
+
+# Attempt 3 — 409 (still counts)
+curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}"
+# Expected: 409
+
+# Attempt 4+ — 429 (rate limited, blocked before reaching service)
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}" | jq
+# Expected (429): "Too many purchase attempts. Maximum 3 attempts allowed."
+```
+
+</details>
+
 ---
 
 ### Scenario 12 — Concurrent Purchases (Shell)
@@ -669,6 +869,24 @@ done
 wait
 ```
 
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# Set STOCK_QUANTITY=3 in .env and restart server
+
+$jobs = 1..10 | ForEach-Object {
+  Start-Job -ScriptBlock {
+    param($i)
+    curl.exe -s -o NUL -w "user-${i}: %{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"user-$i\"}"
+  } -ArgumentList $_
+}
+$jobs | Wait-Job | Receive-Job
+$jobs | Remove-Job
+```
+
+</details>
+
 **Expected:** Exactly 3 responses with `201`, exactly 7 with `410`. No overselling.
 
 Verify:
@@ -677,6 +895,16 @@ Verify:
 curl -s http://localhost:3000/api/sale/status | jq '.stockRemaining'
 # Expected: 0
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+curl.exe -s http://localhost:3000/api/sale/status | jq ".stockRemaining"
+# Expected: 0
+```
+
+</details>
 
 ---
 
@@ -688,6 +916,15 @@ After a successful purchase, verify the order was persisted asynchronously:
 docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
   -c "SELECT id, \"userId\", status, \"createdAt\" FROM orders ORDER BY \"createdAt\" DESC LIMIT 5;"
 ```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db -c "SELECT id, \""userId\"", status, \""createdAt\"" FROM orders ORDER BY \""createdAt\"" DESC LIMIT 5;"
+```
+
+</details>
 
 **Expected:** Rows with `status = 'confirmed'` matching the userIds that successfully purchased.
 
