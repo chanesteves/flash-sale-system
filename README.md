@@ -264,7 +264,7 @@ curl -X POST http://localhost:3000/api/purchases \
 
 ```powershell
 # Attempt purchase
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"user-42\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"user-42\"}' | jq
 ```
 
 </details>
@@ -435,7 +435,7 @@ Below are step-by-step scenarios you can run with `curl` to manually verify ever
 >
 > - Use **`curl.exe`** instead of `curl` (PowerShell aliases `curl` to `Invoke-WebRequest`).
 > - Commands are single-line — PowerShell does not support `\` for line continuation.
-> - JSON data uses escaped double quotes: `-d "{\"userId\": \"alice\"}"` instead of `-d '{"userId": "alice"}'`.
+> - JSON data uses single quotes with backslash-escaped inner quotes: `-d '{\"userId\": \"alice\"}'` instead of `-d '{"userId": "alice"}'`.
 > - Each scenario below includes a **Windows (PowerShell)** dropdown with equivalent commands.
 
 ### Setup: Configure an Active Sale
@@ -514,7 +514,7 @@ curl -s -X POST http://localhost:3000/api/purchases \
 <summary><strong>Windows (PowerShell)</strong></summary>
 
 ```powershell
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"alice\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"alice\"}' | jq
 ```
 
 </details>
@@ -562,7 +562,7 @@ curl -s -X POST http://localhost:3000/api/purchases \
 <summary><strong>Windows (PowerShell)</strong></summary>
 
 ```powershell
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"alice\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"alice\"}' | jq
 ```
 
 </details>
@@ -627,7 +627,8 @@ done
 ```powershell
 foreach ($user in @("bob","carol","dave","eve")) {
   Write-Host "--- $user ---"
-  curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"$user\"}" | jq ".success"
+  $body = '{\"userId\": \"' + $user + '\"}'
+  curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d $body | jq ".success"
 }
 ```
 
@@ -649,7 +650,7 @@ curl -s -X POST http://localhost:3000/api/purchases \
 <summary><strong>Windows (PowerShell)</strong></summary>
 
 ```powershell
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"frank\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"frank\"}' | jq
 ```
 
 </details>
@@ -710,15 +711,15 @@ curl -s -X POST http://localhost:3000/api/purchases \
 
 ```powershell
 # Missing userId
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{}' | jq
 # Expected (400): "userId should not be empty" or similar
 
 # Empty userId
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"\"}' | jq
 # Expected (400): validation error
 
 # Extra fields stripped (whitelist: true)
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"test-user\", \"hack\": true}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"test-user\", \"hack\": true}' | jq
 # Expected (400): "property hack should not exist"
 ```
 
@@ -756,7 +757,7 @@ curl.exe -s http://localhost:3000/api/sale/status | jq ".status"
 # Expected: "upcoming"
 
 # Try to purchase
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"eager-user\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"eager-user\"}' | jq
 # Expected (400): sale not active
 ```
 
@@ -790,7 +791,7 @@ curl -s -X POST http://localhost:3000/api/purchases \
 curl.exe -s http://localhost:3000/api/sale/status | jq ".status"
 # Expected: "ended"
 
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"late-user\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"late-user\"}' | jq
 # Expected (400): sale not active
 ```
 
@@ -833,19 +834,19 @@ curl -s -X POST http://localhost:3000/api/purchases \
 
 ```powershell
 # Attempt 1 — succeeds (purchase)
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}" | jq ".success"
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"spammer\"}' | jq ".success"
 # Expected: true
 
 # Attempt 2 — 409 (already purchased, but counts as attempt)
-curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}"
+curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"spammer\"}'
 # Expected: 409
 
 # Attempt 3 — 409 (still counts)
-curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}"
+curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"spammer\"}'
 # Expected: 409
 
 # Attempt 4+ — 429 (rate limited, blocked before reaching service)
-curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"spammer\"}" | jq
+curl.exe -s -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d '{\"userId\": \"spammer\"}' | jq
 # Expected (429): "Too many purchase attempts. Maximum 3 attempts allowed."
 ```
 
@@ -876,10 +877,12 @@ wait
 # Set STOCK_QUANTITY=3 in .env and restart server
 
 $jobs = 1..10 | ForEach-Object {
+  $userId = "user-$_"
   Start-Job -ScriptBlock {
-    param($i)
-    curl.exe -s -o NUL -w "user-${i}: %{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d "{\"userId\": \"user-$i\"}"
-  } -ArgumentList $_
+    param($id)
+    $body = '{\"userId\": \"' + $id + '\"}'
+    curl.exe -s -o NUL -w "$id`: %{http_code}" -X POST http://localhost:3000/api/purchases -H "Content-Type: application/json" -d $body
+  } -ArgumentList $userId
 }
 $jobs | Wait-Job | Receive-Job
 $jobs | Remove-Job
