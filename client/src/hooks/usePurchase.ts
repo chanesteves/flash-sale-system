@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
-import type { PurchaseResult } from '../types';
-import { purchase } from '../api/flashSaleApi';
+import { useCallback, useState } from "react";
+import type { PurchaseResult } from "../types";
+import { purchase } from "../api/flashSaleApi";
 
 export interface UsePurchaseReturn {
   result: PurchaseResult | null;
@@ -24,7 +24,7 @@ export function usePurchase(): UsePurchaseReturn {
       const res = await purchase(userId);
       setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Purchase failed');
+      setError(err instanceof Error ? err.message : "Purchase failed");
     } finally {
       setLoading(false);
     }

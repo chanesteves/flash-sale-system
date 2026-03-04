@@ -1,6 +1,6 @@
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Counter, Trend } from 'k6/metrics';
+import http from "k6/http";
+import { check, sleep } from "k6";
+import { Counter, Trend } from "k6/metrics";
 
 /**
  * Concurrent Purchase Load Test
@@ -14,27 +14,27 @@ import { Counter, Trend } from 'k6/metrics';
  *   - Zero 5xx errors
  */
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
+const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
 
 // Custom metrics
-const successCounter = new Counter('purchase_success');
-const soldOutCounter = new Counter('purchase_sold_out');
-const duplicateCounter = new Counter('purchase_duplicate');
-const serverErrorCounter = new Counter('purchase_server_error');
-const purchaseDuration = new Trend('purchase_duration', true);
+const successCounter = new Counter("purchase_success");
+const soldOutCounter = new Counter("purchase_sold_out");
+const duplicateCounter = new Counter("purchase_duplicate");
+const serverErrorCounter = new Counter("purchase_server_error");
+const purchaseDuration = new Trend("purchase_duration", true);
 
 export const options = {
   scenarios: {
     burst: {
-      executor: 'shared-iterations',
+      executor: "shared-iterations",
       vus: 200,
       iterations: 1000,
-      maxDuration: '30s',
+      maxDuration: "30s",
     },
   },
   thresholds: {
-    purchase_server_error: ['count==0'],       // No 5xx errors
-    http_req_duration: ['p(95)<500', 'p(99)<1000'],
+    purchase_server_error: ["count==0"], // No 5xx errors
+    http_req_duration: ["p(95)<500", "p(99)<1000"],
   },
 };
 
@@ -44,13 +44,13 @@ export default function () {
   const res = http.post(
     `${BASE_URL}/api/purchases`,
     JSON.stringify({ userId }),
-    { headers: { 'Content-Type': 'application/json' } },
+    { headers: { "Content-Type": "application/json" } },
   );
 
   purchaseDuration.add(res.timings.duration);
 
   check(res, {
-    'status is 201, 409, 410, or 429': (r) =>
+    "status is 201, 409, 410, or 429": (r) =>
       [201, 409, 410, 429].includes(r.status),
   });
 
@@ -76,8 +76,8 @@ export function handleSummary(data) {
     ? data.metrics.purchase_server_error.values.count
     : 0;
 
-  const p95 = data.metrics.http_req_duration.values['p(95)'];
-  const p99 = data.metrics.http_req_duration.values['p(99)'];
+  const p95 = data.metrics.http_req_duration.values["p(95)"];
+  const p99 = data.metrics.http_req_duration.values["p(99)"];
 
   const summary = `
 ╔═══════════════════════════════════════════════════╗
@@ -87,8 +87,8 @@ export function handleSummary(data) {
 ║  Sold out (410)              : ${String(soldOut).padStart(6)}            ║
 ║  Duplicate (409)             : ${String(duplicates).padStart(6)}            ║
 ║  Server errors (5xx)         : ${String(errors).padStart(6)}            ║
-║  p95 latency                 : ${String(p95.toFixed(1) + 'ms').padStart(9)}         ║
-║  p99 latency                 : ${String(p99.toFixed(1) + 'ms').padStart(9)}         ║
+║  p95 latency                 : ${String(p95.toFixed(1) + "ms").padStart(9)}         ║
+║  p99 latency                 : ${String(p99.toFixed(1) + "ms").padStart(9)}         ║
 ╚═══════════════════════════════════════════════════╝
 `;
 

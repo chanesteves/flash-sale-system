@@ -1,4 +1,4 @@
-import type { PurchaseResult } from '../types';
+import type { PurchaseResult } from "../types";
 
 interface Props {
   result: PurchaseResult | null;
@@ -12,7 +12,9 @@ export function PurchaseResultPanel({ result, error, onReset }: Props) {
   const isSuccess = result?.success === true;
 
   return (
-    <div className={`purchase-result ${isSuccess ? 'result-success' : 'result-error'}`}>
+    <div
+      className={`purchase-result ${isSuccess ? "result-success" : "result-error"}`}
+    >
       {isSuccess ? (
         <>
           <div className="result-icon">✅</div>

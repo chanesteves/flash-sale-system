@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { SaleStatus } from '../types';
-import type { SaleStatusResponse } from '../types';
-import { getSaleStatus } from '../api/flashSaleApi';
+import { useEffect, useRef, useState } from "react";
+import { SaleStatus } from "../types";
+import type { SaleStatusResponse } from "../types";
+import { getSaleStatus } from "../api/flashSaleApi";
 
 const POLL_INTERVAL_MS = 3_000;
 
@@ -40,7 +40,9 @@ export function useSaleStatus(): UseSaleStatusReturn {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load sale status');
+          setError(
+            err instanceof Error ? err.message : "Failed to load sale status",
+          );
           setLoading(false);
         }
       }

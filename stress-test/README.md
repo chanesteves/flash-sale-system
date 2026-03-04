@@ -34,11 +34,11 @@ npm run test:all
 
 ## What to expect
 
-| Test              | Key assertions                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------ |
-| Concurrent load   | Exactly `STOCK_QUANTITY` orders succeed (201); every other request gets 409 or 410; no 5xx.      |
-| Sustained         | Server handles 500 req/s for 60 s; p95 latency < 500 ms; p99 < 1 s; error rate < 1%.            |
-| Duplicate storm   | Exactly 1 success (201); 99 conflicts (409); no stock leakage.                                   |
+| Test            | Key assertions                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------- |
+| Concurrent load | Exactly `STOCK_QUANTITY` orders succeed (201); every other request gets 409 or 410; no 5xx. |
+| Sustained       | Server handles 500 req/s for 60 s; p95 latency < 500 ms; p99 < 1 s; error rate < 1%.        |
+| Duplicate storm | Exactly 1 success (201); 99 conflicts (409); no stock leakage.                              |
 
 ## Resetting between runs
 

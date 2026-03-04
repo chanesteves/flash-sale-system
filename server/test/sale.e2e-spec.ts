@@ -6,10 +6,12 @@ import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from '../src/app.module.js';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter.js';
+import { InventoryService } from '../src/inventory/inventory.service.js';
 
 describe('SaleController (e2e)', () => {
   let app: INestApplication<App>;
   let redis: Redis;
+  let inventoryService: InventoryService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,6 +31,8 @@ describe('SaleController (e2e)', () => {
 
     await app.init();
 
+    inventoryService = app.get(InventoryService);
+
     const configService = app.get(ConfigService);
     redis = new Redis({
       host: configService.get<string>('redis.host', 'localhost'),
@@ -40,6 +44,14 @@ describe('SaleController (e2e)', () => {
   afterAll(async () => {
     if (redis) await redis.quit();
     if (app) await app.close();
+  });
+
+  /**
+   * Reset stock before each test so Redis state from previous
+   * manual testing or other test suites doesn't leak in.
+   */
+  beforeEach(async () => {
+    await inventoryService.reset();
   });
 
   describe('GET /api/sale/status', () => {

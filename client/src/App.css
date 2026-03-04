@@ -184,7 +184,9 @@
   background: linear-gradient(135deg, #646cff, #535bf2);
   color: #fff;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
   min-height: 48px;
   display: flex;
   align-items: center;

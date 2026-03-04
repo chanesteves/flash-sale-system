@@ -1,9 +1,9 @@
 /* ── Sale status ─────────────────────────────────────────── */
 
 export const SaleStatus = {
-  UPCOMING: 'upcoming',
-  ACTIVE: 'active',
-  ENDED: 'ended',
+  UPCOMING: "upcoming",
+  ACTIVE: "active",
+  ENDED: "ended",
 } as const;
 
 export type SaleStatus = (typeof SaleStatus)[keyof typeof SaleStatus];

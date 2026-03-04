@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface Props {
   disabled: boolean;
@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function PurchaseForm({ disabled, loading, onSubmit }: Props) {
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +38,7 @@ export function PurchaseForm({ disabled, loading, onSubmit }: Props) {
         className="buy-button"
         disabled={disabled || loading || !userId.trim()}
       >
-        {loading ? (
-          <span className="spinner" />
-        ) : (
-          '🛒 Buy Now'
-        )}
+        {loading ? <span className="spinner" /> : "🛒 Buy Now"}
       </button>
     </form>
   );

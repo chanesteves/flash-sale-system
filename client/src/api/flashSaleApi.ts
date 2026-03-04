@@ -1,12 +1,16 @@
-import type { SaleStatusResponse, PurchaseResult, PurchaseStatusResponse } from '../types';
+import type {
+  SaleStatusResponse,
+  PurchaseResult,
+  PurchaseStatusResponse,
+} from "../types";
 
-const BASE = '/api';
+const BASE = "/api";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     const message =
-      body && typeof body === 'object' && 'message' in body
+      body && typeof body === "object" && "message" in body
         ? String(body.message)
         : res.statusText;
     throw new Error(message);
@@ -23,15 +27,17 @@ export async function getSaleStatus(): Promise<SaleStatusResponse> {
 /** POST /api/purchases */
 export async function purchase(userId: string): Promise<PurchaseResult> {
   const res = await fetch(`${BASE}/purchases`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId }),
   });
   return handleResponse<PurchaseResult>(res);
 }
 
 /** GET /api/purchases/:userId */
-export async function getPurchaseStatus(userId: string): Promise<PurchaseStatusResponse> {
+export async function getPurchaseStatus(
+  userId: string,
+): Promise<PurchaseStatusResponse> {
   const res = await fetch(`${BASE}/purchases/${encodeURIComponent(userId)}`);
   return handleResponse<PurchaseStatusResponse>(res);
 }

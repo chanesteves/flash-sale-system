@@ -1,14 +1,20 @@
-import './App.css';
-import { SaleStatus } from './types';
-import { useSaleStatus } from './hooks/useSaleStatus';
-import { usePurchase } from './hooks/usePurchase';
-import { SaleStatusPanel } from './components/SaleStatus';
-import { PurchaseForm } from './components/PurchaseForm';
-import { PurchaseResultPanel } from './components/PurchaseResult';
+import "./App.css";
+import { SaleStatus } from "./types";
+import { useSaleStatus } from "./hooks/useSaleStatus";
+import { usePurchase } from "./hooks/usePurchase";
+import { SaleStatusPanel } from "./components/SaleStatus";
+import { PurchaseForm } from "./components/PurchaseForm";
+import { PurchaseResultPanel } from "./components/PurchaseResult";
 
 function App() {
   const { data, error: statusError, loading } = useSaleStatus();
-  const { result, error: purchaseError, loading: purchasing, execute, reset } = usePurchase();
+  const {
+    result,
+    error: purchaseError,
+    loading: purchasing,
+    execute,
+    reset,
+  } = usePurchase();
 
   const saleIsActive = data?.status === SaleStatus.ACTIVE;
   const showResult = result !== null || purchaseError !== null;
@@ -39,11 +45,17 @@ function App() {
         )}
 
         {showResult && (
-          <PurchaseResultPanel result={result} error={purchaseError} onReset={reset} />
+          <PurchaseResultPanel
+            result={result}
+            error={purchaseError}
+            onReset={reset}
+          />
         )}
 
         {data?.status === SaleStatus.ENDED && (
-          <p className="ended-message">The sale has ended. Thank you for participating!</p>
+          <p className="ended-message">
+            The sale has ended. Thank you for participating!
+          </p>
         )}
       </main>
 

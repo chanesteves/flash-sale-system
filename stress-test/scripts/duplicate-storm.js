@@ -1,6 +1,6 @@
-import http from 'k6/http';
-import { check } from 'k6';
-import { Counter } from 'k6/metrics';
+import http from "k6/http";
+import { check } from "k6";
+import { Counter } from "k6/metrics";
 
 /**
  * Duplicate User Storm Test
@@ -10,25 +10,25 @@ import { Counter } from 'k6/metrics';
  * This tests the atomicity of the Redis Lua dedup script.
  */
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
-const STORM_USER = __ENV.STORM_USER || 'k6-storm-user';
+const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
+const STORM_USER = __ENV.STORM_USER || "k6-storm-user";
 
-const successCounter = new Counter('storm_success');
-const duplicateCounter = new Counter('storm_duplicate');
-const otherCounter = new Counter('storm_other');
+const successCounter = new Counter("storm_success");
+const duplicateCounter = new Counter("storm_duplicate");
+const otherCounter = new Counter("storm_other");
 
 export const options = {
   scenarios: {
     storm: {
-      executor: 'shared-iterations',
+      executor: "shared-iterations",
       vus: 100,
       iterations: 100,
-      maxDuration: '15s',
+      maxDuration: "15s",
     },
   },
   thresholds: {
-    storm_success: ['count==1'],     // Exactly 1 should succeed
-    storm_other: ['count==0'],       // No unexpected responses
+    storm_success: ["count==1"], // Exactly 1 should succeed
+    storm_other: ["count==0"], // No unexpected responses
   },
 };
 
@@ -36,11 +36,11 @@ export default function () {
   const res = http.post(
     `${BASE_URL}/api/purchases`,
     JSON.stringify({ userId: STORM_USER }),
-    { headers: { 'Content-Type': 'application/json' } },
+    { headers: { "Content-Type": "application/json" } },
   );
 
   check(res, {
-    'status is 201 or 409': (r) => [201, 409].includes(r.status),
+    "status is 201 or 409": (r) => [201, 409].includes(r.status),
   });
 
   if (res.status === 201) successCounter.add(1);
@@ -68,7 +68,7 @@ export function handleSummary(data) {
 ║  Unexpected responses        : ${String(other).padStart(6)}            ║
 ║                                                   ║
 ║  Expected: 1 success, 99 duplicates, 0 other      ║
-║  Result  : ${successes === 1 && other === 0 ? '✅ PASS' : '❌ FAIL'}                                   ║
+║  Result  : ${successes === 1 && other === 0 ? "✅ PASS" : "❌ FAIL"}                                   ║
 ╚═══════════════════════════════════════════════════╝
 `;
 
