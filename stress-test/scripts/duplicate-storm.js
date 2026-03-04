@@ -11,10 +11,10 @@ import { Counter } from "k6/metrics";
  */
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
-const STORM_USER = __ENV.STORM_USER || "k6-storm-user";
 
 const successCounter = new Counter("storm_success");
 const duplicateCounter = new Counter("storm_duplicate");
+const rateLimitedCounter = new Counter("storm_rate_limited");
 const otherCounter = new Counter("storm_other");
 
 export const options = {
@@ -32,19 +32,31 @@ export const options = {
   },
 };
 
-export default function () {
+/**
+ * setup() runs exactly once before VUs start.
+ * Generates a unique storm user per test run to avoid stale Redis state.
+ */
+export function setup() {
+  const stormUser =
+    __ENV.STORM_USER || `k6-storm-user-${Date.now()}`;
+  console.log(`Storm user: ${stormUser}`);
+  return { stormUser };
+}
+
+export default function (data) {
   const res = http.post(
     `${BASE_URL}/api/purchases`,
-    JSON.stringify({ userId: STORM_USER }),
+    JSON.stringify({ userId: data.stormUser }),
     { headers: { "Content-Type": "application/json" } },
   );
 
   check(res, {
-    "status is 201 or 409": (r) => [201, 409].includes(r.status),
+    "status is 201, 409, or 429": (r) => [201, 409, 429].includes(r.status),
   });
 
   if (res.status === 201) successCounter.add(1);
   else if (res.status === 409) duplicateCounter.add(1);
+  else if (res.status === 429) rateLimitedCounter.add(1);
   else otherCounter.add(1);
 }
 
@@ -54,6 +66,9 @@ export function handleSummary(data) {
     : 0;
   const duplicates = data.metrics.storm_duplicate
     ? data.metrics.storm_duplicate.values.count
+    : 0;
+  const rateLimited = data.metrics.storm_rate_limited
+    ? data.metrics.storm_rate_limited.values.count
     : 0;
   const other = data.metrics.storm_other
     ? data.metrics.storm_other.values.count
@@ -65,9 +80,10 @@ export function handleSummary(data) {
 ╠═══════════════════════════════════════════════════╣
 ║  Successful purchases (201)  : ${String(successes).padStart(6)}            ║
 ║  Duplicate rejected  (409)   : ${String(duplicates).padStart(6)}            ║
+║  Rate limited        (429)   : ${String(rateLimited).padStart(6)}            ║
 ║  Unexpected responses        : ${String(other).padStart(6)}            ║
 ║                                                   ║
-║  Expected: 1 success, 99 duplicates, 0 other      ║
+║  Expected: 1 success, 99 rejected (409+429)        ║
 ║  Result  : ${successes === 1 && other === 0 ? "✅ PASS" : "❌ FAIL"}                                   ║
 ╚═══════════════════════════════════════════════════╝
 `;
