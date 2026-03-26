@@ -425,6 +425,95 @@ docker compose ps
 docker compose down -v
 ```
 
+### Inspecting Data
+
+#### Redis
+
+```bash
+# List all flash-sale keys
+docker exec flash-sale-redis redis-cli KEYS "flash_sale:*"
+
+# Current stock count
+docker exec flash-sale-redis redis-cli GET flash_sale:stock_count
+
+# All users who have purchased
+docker exec flash-sale-redis redis-cli SMEMBERS flash_sale:purchased_users
+
+# Check if a specific user has purchased
+docker exec flash-sale-redis redis-cli SISMEMBER flash_sale:purchased_users alice
+
+# Check rate-limit attempts for a user (3 max per hour)
+docker exec flash-sale-redis redis-cli GET flash_sale:attempts:alice
+
+# TTL remaining on a rate-limit key
+docker exec flash-sale-redis redis-cli TTL flash_sale:attempts:alice
+```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+Same commands — `docker exec` works identically in PowerShell.
+
+</details>
+
+#### BullMQ (order-processing queue)
+
+BullMQ stores jobs in Redis under the `bull:order-processing:*` key namespace.
+
+```bash
+# List all BullMQ keys for the order-processing queue
+docker exec flash-sale-redis redis-cli KEYS "bull:order-processing:*"
+
+# Count of jobs by state
+docker exec flash-sale-redis redis-cli LLEN bull:order-processing:wait
+docker exec flash-sale-redis redis-cli ZCARD bull:order-processing:delayed
+docker exec flash-sale-redis redis-cli LLEN bull:order-processing:active
+docker exec flash-sale-redis redis-cli ZCARD bull:order-processing:completed
+docker exec flash-sale-redis redis-cli ZCARD bull:order-processing:failed
+
+# View a specific job's data (replace <jobId> with actual ID)
+docker exec flash-sale-redis redis-cli HGETALL "bull:order-processing:<jobId>"
+```
+
+#### PostgreSQL
+
+```bash
+# List all orders (most recent first)
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
+  -c "SELECT id, \"userId\", status, \"createdAt\" FROM orders ORDER BY \"createdAt\" DESC LIMIT 10;"
+
+# Count orders by status
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
+  -c "SELECT status, COUNT(*) FROM orders GROUP BY status;"
+
+# Total number of orders
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
+  -c "SELECT COUNT(*) FROM orders;"
+
+# Find order for a specific user
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db \
+  -c "SELECT * FROM orders WHERE \"userId\" = 'alice';"
+```
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+# List all orders (most recent first)
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db -c "SELECT id, \""userId\"", status, \""createdAt\"" FROM orders ORDER BY \""createdAt\"" DESC LIMIT 10;"
+
+# Count orders by status
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db -c "SELECT status, COUNT(*) FROM orders GROUP BY status;"
+
+# Total number of orders
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db -c "SELECT COUNT(*) FROM orders;"
+
+# Find order for a specific user
+docker exec flash-sale-postgres psql -U flash_sale_user -d flash_sale_db -c "SELECT * FROM orders WHERE \""userId\"" = 'alice';"
+```
+
+</details>
+
 ---
 
 ## Manual Testing Scenarios
