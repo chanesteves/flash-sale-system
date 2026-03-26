@@ -4,6 +4,7 @@
   "description": "k6 stress tests for the Flash Sale System",
   "private": true,
   "scripts": {
+    "test:light": "k6 run scripts/light-concurrent-purchase.js",
     "test:stress": "k6 run scripts/concurrent-purchase.js",
     "test:sustained": "k6 run scripts/sustained-throughput.js",
     "test:dedup": "k6 run scripts/duplicate-storm.js",

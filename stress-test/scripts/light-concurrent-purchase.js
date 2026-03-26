@@ -3,15 +3,10 @@ import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
 
 /**
- * Concurrent Purchase Load Test
+ * Light Concurrent Purchase Load Test
  *
- * Simulates 1 000 virtual users each making a single purchase request
- * against 100 stock items.
- *
- * Expected:
- *   - Exactly 100 × 201 (success)
- *   - Remaining get 409 (duplicate) or 410 (sold out)
- *   - Zero 5xx errors
+ * Simulates 200 virtual users each making a single purchase request
+ * against 100 stock items with reduced concurrency.
  */
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
@@ -27,8 +22,8 @@ export const options = {
   scenarios: {
     burst: {
       executor: "shared-iterations",
-      vus: 200,
-      iterations: 1000,
+      vus: 50, // Reduced from 200
+      iterations: 200, // Reduced from 1000
       maxDuration: "30s",
     },
   },
@@ -59,7 +54,7 @@ export default function () {
   else if (res.status === 409) duplicateCounter.add(1);
   else if (res.status >= 500) serverErrorCounter.add(1);
 
-  sleep(0.01); // Tiny breathing room
+  sleep(0.05); // Slightly more breathing room
 }
 
 export function handleSummary(data) {
@@ -81,7 +76,7 @@ export function handleSummary(data) {
 
   const summary = `
 ╔═══════════════════════════════════════════════════╗
-║       Concurrent Purchase Load Test Results       ║
+║      Light Concurrent Purchase Test Results       ║
 ╠═══════════════════════════════════════════════════╣
 ║  Successful purchases (201)  : ${String(successes).padStart(6)}            ║
 ║  Sold out (410)              : ${String(soldOut).padStart(6)}            ║

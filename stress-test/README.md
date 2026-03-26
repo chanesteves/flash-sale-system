@@ -19,7 +19,10 @@
 ```bash
 cd stress-test
 
-# 1. Concurrent purchase load test (1 000 VUs, 100 stock, ramp-up 10 s)
+# 0. Light concurrent test (50 VUs, 200 requests - recommended for local testing)
+npm run test:light
+
+# 1. Concurrent purchase load test (200 VUs, 1000 requests, 100 stock)
 npm run test:stress
 
 # 2. Sustained throughput test (500 req/s for 60 s)
@@ -32,11 +35,19 @@ npm run test:dedup
 npm run test:all
 ```
 
+## Notes
+
+- **Connection limits**: The default Node.js HTTP server may reset connections when
+  handling very high concurrency (200+ simultaneous connections). The `test:light`
+  script uses 50 VUs which works reliably on local machines. For production-scale
+  testing, consider increasing system limits or using a load balancer.
+
 ## What to expect
 
 | Test            | Key assertions                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------- |
-| Concurrent load | Exactly `STOCK_QUANTITY` orders succeed (201); every other request gets 409 or 410; no 5xx. |
+| Light load      | 50 VUs, 200 requests; reliable on local machines; no connection resets.                     |
+| Concurrent load | 200 VUs, 1000 requests; expect some connection resets on local machines.                    |
 | Sustained       | Server handles 500 req/s for 60 s; p95 latency < 500 ms; p99 < 1 s; error rate < 1%.        |
 | Duplicate storm | Exactly 1 success (201); 99 conflicts (409); no stock leakage.                              |
 
